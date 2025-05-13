@@ -3,7 +3,9 @@ import UIKit
 
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var image: UIImage?
+    var sourceType: UIImagePickerController.SourceType
     var onComplete: () -> Void
+
 
     class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
         let parent: ImagePicker
@@ -22,6 +24,7 @@ struct ImagePicker: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let pc = UIImagePickerController()
         pc.delegate = context.coordinator
+        pc.sourceType = sourceType
         return pc
     }
     func updateUIViewController(_ uiVC: UIImagePickerController, context: Context) {}

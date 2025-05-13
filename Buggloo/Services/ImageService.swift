@@ -8,7 +8,7 @@ enum ImageServiceError: Error {
 }
 
 class ImageService {
-    private let backendURL = URL(string: "http://82.76.112.183:8080/insect/identify")!
+    private let backendURL = URL(string: "http://86.121.152.144:8080/insect/identify")!
 
     func identify(insectImage image: UIImage) async throws -> Insect {
         guard let imageData = image.jpegData(compressionQuality: 0.1) else {

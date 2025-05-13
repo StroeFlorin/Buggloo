@@ -2,7 +2,8 @@ import Foundation
 import SwiftUI
 import UIKit
 
-struct Insect: Decodable {
+struct Insect: Codable, Identifiable {
+    let id = UUID()
     let common_name: String?
     let scientific_name: String?
     let alternative_names: [String]?
@@ -32,9 +33,14 @@ struct Insect: Decodable {
     let conservation_status: String?
     let url_wikipedia: String?
     let `class`: String?
-    var thumbnail: UIImage? = nil
+    var thumbnailData: Data?
+    
+    var thumbnail: UIImage? {
+        get { thumbnailData.flatMap(UIImage.init) }
+        set { thumbnailData = newValue?.pngData() }
+      }
 
     enum CodingKeys: String, CodingKey {
-        case common_name, scientific_name, alternative_names, domain, kingdom, phylum, order, family, genus, species, geographic_range, habitat_type, seasonal_appearance, size, colors, has_wings, leg_count, distinctive_markings, diet, activity_time, lifespan, predators, defense_mechanisms, role_in_ecosystem, interesting_facts, similar_species, conservation_status, url_wikipedia, `class`
+        case common_name, scientific_name, alternative_names, domain, kingdom, phylum, order, family, genus, species, geographic_range, habitat_type, seasonal_appearance, size, colors, has_wings, leg_count, distinctive_markings, diet, activity_time, lifespan, predators, defense_mechanisms, role_in_ecosystem, interesting_facts, similar_species, conservation_status, url_wikipedia, `class`, thumbnailData
     }
 }

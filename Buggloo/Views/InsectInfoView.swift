@@ -1,7 +1,6 @@
 import SwiftUI
 
-
-struct DetailRow: View {
+struct DetailRowView: View {
     let title: String
     let value: String?
 
@@ -29,146 +28,247 @@ struct DetailRow: View {
     }
 }
 
+struct TitleView: View {
+    let title: String
+
+    var body: some View {
+        Text(title)
+            .font(.title2)
+            .padding(.bottom, 2)
+    }
+}
+
+//main
 struct InsectInfoView: View {
     let insect: Insect
-    let thumbnail: UIImage?
     @State private var isFullscreenImage = false
 
     var body: some View {
-        List {
-            Section(header: Text("Picture of the insect")) {
-                Button {
-                    isFullscreenImage = true
-                } label: {
-                    Image(uiImage: thumbnail ?? UIImage())
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 250)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+        ScrollView {
+            NamePhotoAndTaxonomyView(
+                insect: insect,
+                isFullscreenImage: $isFullscreenImage
+            )
 
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
+            VStack(alignment: .leading) {
+                TitleView(title: "Habitat & Range")
 
-            Section(header: Text("Basic Info")) {
-                DetailRow(title: "Common name:", value: insect.common_name)
-                DetailRow(
-                    title: "Scientific name:",
-                    value: insect.scientific_name
-                )
-                if let alt = insect.alternative_names, !alt.isEmpty {
-                    DetailRow(
-                        title: "Alternative names:",
-                        value: alt.joined(separator: ", ")
-                    )
-                }
-            }
-            Section(header: Text("Classification")) {
-                DetailRow(title: "Domain:", value: insect.domain)
-                DetailRow(title: "Kingdom:", value: insect.kingdom)
-                DetailRow(title: "Phylum:", value: insect.phylum)
-                DetailRow(title: "Class:", value: insect.`class`)
-                DetailRow(title: "Order:", value: insect.order)
-                DetailRow(title: "Family:", value: insect.family)
-                DetailRow(title: "Genus:", value: insect.genus)
-                DetailRow(title: "Species:", value: insect.species)
-            }
-
-            Section(header: Text("Habitat & Range")) {
-                DetailRow(
+                DetailRowView(
                     title: "Geographic range:",
                     value: insect.geographic_range
                 )
-                DetailRow(title: "Habitat type:", value: insect.habitat_type)
-                DetailRow(
+                DetailRowView(
+                    title: "Habitat type:",
+                    value: insect.habitat_type
+                )
+                DetailRowView(
                     title: "Seasonal appearance:",
                     value: insect.seasonal_appearance
                 )
-            }
 
-            Section(header: Text("Physical Characteristics")) {
-                DetailRow(title: "Size:", value: insect.size)
+                Divider()
+
+                TitleView(title: "Physical characteristics")
+
+                DetailRowView(title: "Size:", value: insect.size)
                 if let colors = insect.colors, !colors.isEmpty {
-                    DetailRow(
+                    DetailRowView(
                         title: "Colors:",
                         value: colors.joined(separator: ", ")
                     )
                 }
+
                 if let wings = insect.has_wings {
-                    DetailRow(title: "Has wings:", value: wings ? "Yes" : "No")
+                    DetailRowView(
+                        title: "Has wings:",
+                        value: wings ? "Yes" : "No"
+                    )
                 }
+
                 if let legs = insect.leg_count {
-                    DetailRow(title: "Leg count:", value: "\(legs)")
+                    DetailRowView(title: "Leg count:", value: "\(legs)")
                 }
-                DetailRow(
+
+                DetailRowView(
                     title: "Distinctive markings:",
                     value: insect.distinctive_markings
                 )
-            }
 
-            Section(header: Text("Ecology & Behavior")) {
-                DetailRow(title: "Diet:", value: insect.diet)
-                DetailRow(title: "Activity time:", value: insect.activity_time)
-                DetailRow(title: "Lifespan:", value: insect.lifespan)
+                Divider()
+
+                TitleView(title: "Ecology & Behaviour")
+
+                DetailRowView(title: "Diet:", value: insect.diet)
+
+                DetailRowView(
+                    title: "Activity time:",
+                    value: insect.activity_time
+                )
+
+                DetailRowView(title: "Lifespan:", value: insect.lifespan)
+
                 if let preds = insect.predators, !preds.isEmpty {
-                    DetailRow(
+                    DetailRowView(
                         title: "Predators:",
                         value: preds.joined(separator: ", ")
                     )
                 }
+
                 if let defs = insect.defense_mechanisms, !defs.isEmpty {
-                    DetailRow(
-                        title: "Defense mechanisms",
+                    DetailRowView(
+                        title: "Defense mechanisms:",
                         value: defs.joined(separator: ", ")
                     )
                 }
-                DetailRow(
+
+                DetailRowView(
                     title: "Role in ecosystem:",
                     value: insect.role_in_ecosystem
                 )
+
                 if let facts = insect.interesting_facts, !facts.isEmpty {
-                    DetailRow(
+                    DetailRowView(
                         title: "Interesting facts:",
                         value: facts.joined(separator: "\n")
                     )
                 }
+
                 if let sims = insect.similar_species, !sims.isEmpty {
-                    DetailRow(
+                    DetailRowView(
                         title: "Similar species:",
                         value: sims.joined(separator: ", ")
                     )
                 }
-            }
 
-            Section(header: Text("Additional Info")) {
-                DetailRow(
-                    title: "Conservation status:",
-                    value: insect.conservation_status
-                )
-                if let wiki = insect.url_wikipedia, let url = URL(string: wiki),
-                    !wiki.isEmpty
-                {
-                    Link("View on Wikipedia", destination: url)
-                        .font(.body).foregroundColor(.blue)
-                }
             }
+            .padding(.horizontal, 30)
+            .listStyle(InsetGroupedListStyle())
+
         }
-        .listStyle(InsetGroupedListStyle())
+        .navigationTitle(Text(insect.common_name ?? "Unknown insect"))
+        .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(isPresented: $isFullscreenImage) {
             ZStack {
                 Color.black.ignoresSafeArea()
-                if let img = thumbnail {
+
+                if let img = insect.thumbnail {
                     Image(uiImage: img)
                         .resizable()
                         .scaledToFit()
-                        .onTapGesture { isFullscreenImage = false }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black)
+                        .onTapGesture {
+                            isFullscreenImage = false
+                        }
                 }
             }
         }
     }
 }
 
+struct NamePhotoAndTaxonomyView: View {
+    let insect: Insect
+    @Binding var isFullscreenImage: Bool
 
+    var body: some View {
+        HStack {
+            TaxonomyView(insect: insect)
 
+            VStack(alignment: .leading, spacing: 0) {
+                Button {
+                    isFullscreenImage = true
+                } label: {
+                    Image(uiImage: insect.thumbnail!)
+                        .resizable()
+                        .scaledToFit()
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(Color.green, lineWidth: 2)
+                        )
+                }
+                .buttonStyle(PlainButtonStyle())
 
+                DetailRowView(title: "Common name:", value: insect.common_name)
+                
+                DetailRowView(
+                    title: "Scientific name:",
+                    value: insect.scientific_name
+                )
+                
+                if let alt = insect.alternative_names, !alt.isEmpty {
+                    DetailRowView(
+                        title: "Alternative names:",
+                        value: alt.joined(separator: ", ")
+                    )
+                }
 
+                DetailRowView(
+                    title: "Conservation status:",
+                    value: insect.conservation_status
+                )
+                
+                if let wiki = insect.url_wikipedia, let url = URL(string: wiki),
+                    !wiki.isEmpty
+                {
+                    Link("View on Wikipedia", destination: url)
+                        .font(.body).foregroundColor(.blue)
+                }
+
+                Spacer()
+            }
+        }
+    }
+}
+
+struct TaxonomyView: View {
+    let insect: Insect
+
+    var body: some View {
+        let taxonomy = getTaxonomy(from: insect)
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(0..<taxonomy.count, id: \.self) { index in
+                HStack(alignment: .top) {
+                    VStack(spacing: 0) {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 17, height: 17)
+                        if index < taxonomy.count - 1 {
+                            Rectangle()
+                                .fill(Color.green)
+                                .frame(width: 2, height: 50)
+                                .offset(y: 1)
+                        }
+                    }
+                    .frame(width: 16)
+                    .padding(.top, 2)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(taxonomy[index].level)
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        Text(taxonomy[index].name)
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.bottom, 8)
+                }
+            }
+        }
+        .padding()
+    }
+}
+
+func getTaxonomy(from insect: Insect) -> [(level: String, name: String)] {
+    return [
+        ("Domain", insect.domain ?? "Unknown"),
+        ("Kingdom", insect.kingdom ?? "Unknown"),
+        ("Phylum", insect.phylum ?? "Unknown"),
+        ("Class", insect.class ?? "Unknown"),
+        ("Order", insect.order ?? "Unknown"),
+        ("Family", insect.family ?? "Unknown"),
+        ("Genus", insect.genus ?? "Unknown"),
+        ("Species", insect.species ?? "Unknown"),
+    ]
+}
